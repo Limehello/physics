@@ -1,4 +1,4 @@
-package com.advn.physics;
+apackage com.advn.physics;
 
 public class PhysicsMass {
     private double mass; // Mass in grams
