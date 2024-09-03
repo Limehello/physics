@@ -71,6 +71,34 @@ public class PhysicsVector {
     public static PhysicsVector fromPolar(double magnitude, double angle) {
         return new PhysicsVector(magnitude * Math.cos(angle), magnitude * Math.sin(angle));
     }
+    public PhysicsVector reflect(PhysicsVector normal) {
+        double dotProduct = dot(normal);
+        return subtract(normal.scale(2 * dotProduct));
+    }
+    public static PhysicsVector interpolate(PhysicsVector start, PhysicsVector end, double t) {
+        return new PhysicsVector(
+            start.pX + t * (end.pX - start.pX),
+            start.pY + t * (end.pY - start.pY));
+    }
+    public double distanceSquaredTo(PhysicsVector other) {
+        return Math.pow(this.pX - other.pX, 2) + Math.pow(this.pY - other.pY, 2);
+    }
+    public static PhysicsVector linearCombination(PhysicsVector v1, double a, PhysicsVector v2, double b) {
+        return new PhysicsVector(a * v1.pX + b * v2.pX, a * v1.pY + b * v2.pY);
+    }
+    public PhysicsVector orthogonal() {
+        return new PhysicsVector(-pY, pX);
+    }
+    public boolean isParallelTo(PhysicsVector other) {
+        return Math.abs(cross(other)) < 1e-10; // Small tolerance for floating-point comparisons
+    }
+    public boolean isCollinearTo(PhysicsVector other) {
+        return Math.abs(cross(other)) < 1e-10; // Same as parallelism for 2D vectors
+    }
+    public PhysicsVector unitVector() {
+        return normalize();
+    }
+    
     
     @Override
     public String toString() {
