@@ -9,19 +9,19 @@ public class PhysicsVector {
         this.pY = y;
     }
 
-    public double getPX() {
+    public double getX() {
         return pX;
     }
 
-    public double getPY() {
+    public double getY() {
         return pY;
     }
 
-    public void setPX(double x) {
+    public void setX(double x) {
         this.pX = x;
     }
 
-    public void setPY(double y) {
+    public void setY(double y) {
         this.pY = y;
     }
 
