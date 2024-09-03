@@ -1,7 +1,7 @@
 package com.advn.physics;
 
 public class PhysicsObject {
-    private Mass;
+    private PhysicsMass Mass;
     public PhysicsObject(PhysicsMass Mass) {
         this.Mass = Mass;
     }
