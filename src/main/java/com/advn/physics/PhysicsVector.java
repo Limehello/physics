@@ -26,15 +26,15 @@ public class PhysicsVector {
     }
 
     public PhysicsVector add(PhysicsVector other) {
-        return new PhysicsVector(this.pX + other.getPX(), this.pY + other.getPY());
+        return new PhysicsVector(this.pX + other.getX(), this.pY + other.getY());
     }
 
     public PhysicsVector subtract(PhysicsVector other) {
-        return new PhysicsVector(this.pX - other.getPX(), this.pY - other.getPY());
+        return new PhysicsVector(this.pX - other.getX(), this.pY - other.getY());
     }
 
     public double dotProduct(PhysicsVector other) {
-        return this.pX * other.getPX() + this.pY * other.getPY();
+        return this.pX * other.getX() + this.pY * other.getY();
     }
 
     public double magnitude() {
@@ -54,20 +54,20 @@ public class PhysicsVector {
         double dotProduct = dotProduct(other);
         double magnitudes = this.magnitude() * other.magnitude();
         if (magnitudes == 0) return 0; // Avoid division by zero
-        return Math.acos(dotProduct / magnitudes);
+        return Math.acos(Math.min(1, Math.max(-1, dotProduct / magnitudes))); // Clamp value to avoid NaN
     }
 
     public PhysicsVector projectOnto(PhysicsVector other) {
         double scalar = dotProduct(other) / other.magnitude() / other.magnitude();
-        return new PhysicsVector(scalar * other.getPX(), scalar * other.getPY());
+        return new PhysicsVector(scalar * other.getX(), scalar * other.getY());
     }
 
     public double cross(PhysicsVector other) {
-        return this.pX * other.getPY() - this.pY * other.getPX();
+        return this.pX * other.getY() - this.pY * other.getX();
     }
 
     public double distanceTo(PhysicsVector other) {
-        return Math.sqrt(Math.pow(this.pX - other.getPX(), 2) + Math.pow(this.pY - other.getPY(), 2));
+        return Math.sqrt(Math.pow(this.pX - other.getX(), 2) + Math.pow(this.pY - other.getY(), 2));
     }
 
     public PhysicsVector scale(double factor) {
@@ -97,16 +97,16 @@ public class PhysicsVector {
 
     public static PhysicsVector interpolate(PhysicsVector start, PhysicsVector end, double t) {
         return new PhysicsVector(
-            start.getPX() + t * (end.getPX() - start.getPX()),
-            start.getPY() + t * (end.getPY() - start.getPY()));
+            start.getX() + t * (end.getX() - start.getX()),
+            start.getY() + t * (end.getY() - start.getY()));
     }
 
     public double distanceSquaredTo(PhysicsVector other) {
-        return Math.pow(this.pX - other.getPX(), 2) + Math.pow(this.pY - other.getPY(), 2);
+        return Math.pow(this.pX - other.getX(), 2) + Math.pow(this.pY - other.getY(), 2);
     }
 
     public static PhysicsVector linearCombination(PhysicsVector v1, double a, PhysicsVector v2, double b) {
-        return new PhysicsVector(a * v1.getPX() + b * v2.getPX(), a * v1.getPY() + b * v2.getPY());
+        return new PhysicsVector(a * v1.getX() + b * v2.getX(), a * v1.getY() + b * v2.getY());
     }
 
     public PhysicsVector orthogonal() {
@@ -118,7 +118,7 @@ public class PhysicsVector {
     }
 
     public boolean isCollinearTo(PhysicsVector other) {
-        return Math.abs(cross(other)) < 1e-10; // Same as parallelism for 2D vectors
+        return isParallelTo(other); // Same as parallelism for 2D vectors
     }
 
     public PhysicsVector unitVector() {
@@ -128,8 +128,8 @@ public class PhysicsVector {
     public double distanceToLineSegment(PhysicsVector p1, PhysicsVector p2) {
         double l2 = p1.distanceSquaredTo(p2);
         if (l2 == 0) return distanceTo(p1);
-        double t = Math.max(0, Math.min(1, (this.pX - p1.getPX()) * (p2.getPX() - p1.getPX()) + (this.pY - p1.getPY()) * (p2.getPY() - p1.getPY())) / l2);
-        return distanceTo(new PhysicsVector(p1.getPX() + t * (p2.getPX() - p1.getPX()), p1.getPY() + t * (p2.getPY() - p1.getPY())));
+        double t = Math.max(0, Math.min(1, (this.pX - p1.getX()) * (p2.getX() - p1.getX()) + (this.pY - p1.getY()) * (p2.getY() - p1.getY())) / l2);
+        return distanceTo(new PhysicsVector(p1.getX() + t * (p2.getX() - p1.getX()), p1.getY() + t * (p2.getY() - p1.getY())));
     }
 
     public PhysicsVector projectOntoLine(PhysicsVector lineStart, PhysicsVector lineEnd) {
@@ -153,19 +153,19 @@ public class PhysicsVector {
         double sumX = 0;
         double sumY = 0;
         for (PhysicsVector v : vectors) {
-            sumX += v.getPX();
-            sumY += v.getPY();
+            sumX += v.getX();
+            sumY += v.getY();
         }
         return new PhysicsVector(sumX / vectors.length, sumY / vectors.length);
     }
 
     public static PhysicsVector intersectLines(PhysicsVector p1, PhysicsVector p2, PhysicsVector p3, PhysicsVector p4) {
-        double a1 = p2.getPY() - p1.getPY();
-        double b1 = p1.getPX() - p2.getPX();
-        double c1 = a1 * p1.getPX() + b1 * p1.getPY();
-        double a2 = p4.getPY() - p3.getPY();
-        double b2 = p3.getPX() - p4.getPX();
-        double c2 = a2 * p3.getPX() + b2 * p3.getPY();
+        double a1 = p2.getY() - p1.getY();
+        double b1 = p1.getX() - p2.getX();
+        double c1 = a1 * p1.getX() + b1 * p1.getY();
+        double a2 = p4.getY() - p3.getY();
+        double b2 = p3.getX() - p4.getX();
+        double c2 = a2 * p3.getX() + b2 * p3.getY();
         double determinant = a1 * b2 - a2 * b1;
         if (Math.abs(determinant) < 1e-10) {
             return null; // Lines are parallel
@@ -182,9 +182,9 @@ public class PhysicsVector {
     }
 
     public double[] barycentricCoordinates(PhysicsVector v1, PhysicsVector v2, PhysicsVector v3) {
-        double denom = (v2.getPY() - v3.getPY()) * (v1.getPX() - v3.getPX()) + (v3.getPX() - v2.getPX()) * (v1.getPY() - v3.getPY());
-        double a = ((v2.getPY() - v3.getPY()) * (pX - v3.getPX()) + (v3.getPX() - v2.getPX()) * (pY - v3.getPY())) / denom;
-        double b = ((v3.getPY() - v1.getPY()) * (pX - v3.getPX()) + (v1.getPX() - v3.getPX()) * (pY - v3.getPY())) / denom;
+        double denom = (v2.getY() - v3.getY()) * (v1.getX() - v3.getX()) + (v3.getX() - v2.getX()) * (v1.getY() - v3.getY());
+        double a = ((v2.getY() - v3.getY()) * (pX - v3.getX()) + (v3.getX() - v2.getX()) * (pY - v3.getY())) / denom;
+        double b = ((v3.getY() - v1.getY()) * (pX - v3.getX()) + (v1.getX() - v3.getX()) * (pY - v3.getY())) / denom;
         double c = 1 - a - b;
         return new double[]{a, b, c};
     }
@@ -193,4 +193,4 @@ public class PhysicsVector {
     public String toString() {
         return String.format("PhysicsVector(x: %.2f, y: %.2f)", pX, pY);
     }
-}
+            }
