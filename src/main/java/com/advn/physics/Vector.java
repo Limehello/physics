@@ -20,13 +20,13 @@ public class PhysicsVector {
         this.pY = y;
     }
     public PhysicsVector add(PhysicsVector other) {
-        return new PhysicsVector(this.pX + other.getPX, this.pY + other.getPY);
+        return new PhysicsVector(this.pX + other.pX, this.pY + other.pY);
     }
     public PhysicsVector subtract(PhysicsVector other) {
-        return new PhysicsVector(this.pX - other.getPX, this.pY - other.getPY);
+        return new PhysicsVector(this.pX - other.pX, this.pY - other.pY);
     }
     public double dotProduct(PhysicsVector other) {
-        return this.pX * other.getPX + this.pY * other.getPY;
+        return this.pX * other.pX + this.pY * other.pY;
     }
     public double magnitude() {
         return Math.sqrt(pX * pX + pY * pY);
