@@ -1,30 +1,45 @@
 package com.advn.physics;
 
 public class Matrix {
-    private float[][] values;
+    private double[][] values;
 
-    public Matrix(int rows, int cols) {
-        values = new float[rows][cols];
+    public Matrix(long rows, long cols) {
+        values = new double[(int)rows][(int)cols];
     }
 
-    public Matrix(float[][] values) {
-        this.values = values;
+    public Matrix(double[][] values) {
+        if (values == null || values.length == 0 || values[0].length == 0) {
+            throw new IllegalArgumentException("Matrix cannot be null or empty.");
+        }
+        // Deep copy to avoid modifying the original data
+        this.values = new double[values.length][values[0].length];
+        for (int i = 0; i < values.length; i++) {
+            System.arraycopy(values[i], 0, this.values[i], 0, values[i].length);
+        }
     }
 
-    public int getRows() {
+    public long getRows() {
         return values.length;
     }
 
-    public int getCols() {
+    public long getCols() {
         return values[0].length;
     }
 
-    public float get(int row, int col) {
-        return values[row][col];
+    public double get(long row, long col) {
+        checkIndex(row, col);
+        return values[(int)row][(int)col];
     }
 
-    public void set(int row, int col, float value) {
-        values[row][col] = value;
+    public void set(long row, long col, double value) {
+        checkIndex(row, col);
+        values[(int)row][(int)col] = value;
+    }
+
+    private void checkIndex(long row, long col) {
+        if (row < 0 || row >= getRows() || col < 0 || col >= getCols()) {
+            throw new IndexOutOfBoundsException("Invalid index: (" + row + ", " + col + ").");
+        }
     }
 
     public Matrix multiply(Matrix other) {
@@ -32,15 +47,15 @@ public class Matrix {
             throw new IllegalArgumentException("Matrix dimensions do not match for multiplication.");
         }
 
-        int rows = this.getRows();
-        int cols = other.getCols();
-        int inner = this.getCols();
+        long rows = this.getRows();
+        long cols = other.getCols();
+        long inner = this.getCols();
         Matrix result = new Matrix(rows, cols);
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                float sum = 0;
-                for (int k = 0; k < inner; k++) {
+        for (long i = 0; i < rows; i++) {
+            for (long j = 0; j < cols; j++) {
+                double sum = 0;
+                for (long k = 0; k < inner; k++) {
                     sum += this.get(i, k) * other.get(k, j);
                 }
                 result.set(i, j, sum);
@@ -55,128 +70,154 @@ public class Matrix {
             throw new IllegalArgumentException("Matrix dimensions do not match for addition.");
         }
 
-        int rows = this.getRows();
-        int cols = this.getCols();
+        long rows = this.getRows();
+        long cols = this.getCols();
         Matrix result = new Matrix(rows, cols);
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+        for (long i = 0; i < rows; i++) {
+            for (long j = 0; j < cols; j++) {
                 result.set(i, j, this.get(i, j) + other.get(i, j));
             }
         }
 
         return result;
     }
+
     public Matrix transpose() {
-        int rows = getRows();
-        int cols = getCols();
+        long rows = getRows();
+        long cols = getCols();
         Matrix result = new Matrix(cols, rows);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
+        for (long i = 0; i < rows; i++) {
+            for (long j = 0; j < cols; j++) {
                 result.set(j, i, this.get(i, j));
             }
         }
         return result;
     }
-    public float determinant() {
-    if (getRows() != getCols()) {
-        throw new IllegalArgumentException("Matrix must be square to compute determinant.");
-    }
 
-    if (getRows() == 2) {
-        return get(0, 0) * get(1, 1) - get(0, 1) * get(1, 0);
-    }
-
-    throw new UnsupportedOperationException("Determinant calculation is only implemented for 2x2 matrices.");
-    }
-    public Matrix inverse() {
-    if (getRows() != getCols()) {
-        throw new IllegalArgumentException("Matrix must be square to compute inverse.");
-    }
-
-    if (getRows() == 2) {
-        float det = determinant();
-        if (det == 0) {
-            throw new ArithmeticException("Matrix is singular and cannot be inverted.");
+    public double determinant() {
+        if (getRows() != getCols()) {
+            throw new IllegalArgumentException("Matrix must be square to compute determinant.");
         }
-        Matrix result = new Matrix(2, 2);
-        result.set(0, 0, get(1, 1) / det);
-        result.set(0, 1, -get(0, 1) / det);
-        result.set(1, 0, -get(1, 0) / det);
-        result.set(1, 1, get(0, 0) / det);
+
+        if (getRows() == 2) {
+            return get(0, 0) * get(1, 1) - get(0, 1) * get(1, 0);
+        }
+
+        throw new UnsupportedOperationException("Determinant calculation is only implemented for 2x2 matrices.");
+    }
+
+    public Matrix inverse() {
+        if (getRows() != getCols()) {
+            throw new IllegalArgumentException("Matrix must be square to compute inverse.");
+        }
+
+        if (getRows() == 2) {
+            double det = determinant();
+            if (det == 0) {
+                throw new ArithmeticException("Matrix is singular and cannot be inverted.");
+            }
+            Matrix result = new Matrix(2, 2);
+            result.set(0, 0, get(1, 1) / det);
+            result.set(0, 1, -get(0, 1) / det);
+            result.set(1, 0, -get(1, 0) / det);
+            result.set(1, 1, get(0, 0) / det);
+            return result;
+        }
+
+        throw new UnsupportedOperationException("Inverse calculation is only implemented for 2x2 matrices.");
+    }
+
+    public Matrix scalarMultiply(double scalar) {
+        long rows = getRows();
+        long cols = getCols();
+        Matrix result = new Matrix(rows, cols);
+
+        for (long i = 0; i < rows; i++) {
+            for (long j = 0; j < cols; j++) {
+                result.set(i, j, this.get(i, j) * scalar);
+            }
+        }
+
         return result;
     }
 
-    throw new UnsupportedOperationException("Inverse calculation is only implemented for 2x2 matrices.");
+    public double norm() {
+        double sum = 0;
+        for (long i = 0; i < getRows(); i++) {
+            for (long j = 0; j < getCols(); j++) {
+                sum += Math.pow(get(i, j), 2);
+            }
+        }
+        return Math.sqrt(sum);
     }
-    public Matrix scalarMultiply(float scalar) {
-    int rows = getRows();
-    int cols = getCols();
-    Matrix result = new Matrix(rows, cols);
 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            result.set(i, j, this.get(i, j) * scalar);
+    public void swapRows(long row1, long row2) {
+        if (row1 < 0 || row1 >= getRows() || row2 < 0 || row2 >= getRows()) {
+            throw new IndexOutOfBoundsException("Invalid row index: " + row1 + " or " + row2);
+        }
+        double[] temp = values[(int)row1];
+        values[(int)row1] = values[(int)row2];
+        values[(int)row2] = temp;
+    }
+
+    public void scaleRow(long row, double factor) {
+        if (row < 0 || row >= getRows()) {
+            throw new IndexOutOfBoundsException("Invalid row index: " + row);
+        }
+        for (long j = 0; j < getCols(); j++) {
+            values[(int)row][(int)j] *= factor;
         }
     }
 
-    return result;
-    }
-    public float norm() {
-    float sum = 0;
-    for (int i = 0; i < getRows(); i++) {
-        for (int j = 0; j < getCols(); j++) {
-            sum += Math.pow(get(i, j), 2);
+    public void addRows(long row1, long row2, double factor) {
+        if (row1 < 0 || row1 >= getRows() || row2 < 0 || row2 >= getRows()) {
+            throw new IndexOutOfBoundsException("Invalid row index: " + row1 + " or " + row2);
+        }
+        for (long j = 0; j < getCols(); j++) {
+            values[(int)row1][(int)j] += factor * values[(int)row2][(int)j];
         }
     }
-    return (float) Math.sqrt(sum);
-    }
-    public void swapRows(int row1, int row2) {
-    float[] temp = values[row1];
-    values[row1] = values[row2];
-    values[row2] = temp;
-}
 
-public void scaleRow(int row, float factor) {
-    for (int j = 0; j < getCols(); j++) {
-        values[row][j] *= factor;
-    }
-}
-
-public void addRows(int row1, int row2, float factor) {
-    for (int j = 0; j < getCols(); j++) {
-        values[row1][j] += factor * values[row2][j];
-    }
-}
     public Matrix power(int n) {
-    if (getRows() != getCols()) {
-        throw new IllegalArgumentException("Matrix must be square to compute power.");
+        if (getRows() != getCols()) {
+            throw new IllegalArgumentException("Matrix must be square to compute power.");
+        }
+
+        if (n < 0) {
+            throw new IllegalArgumentException("Exponent must be non-negative.");
+        }
+
+        Matrix result = Matrix.identity((int)getRows());
+        Matrix base = new Matrix(values);
+
+        for (int i = 0; i < n; i++) {
+            result = result.multiply(base);
+        }
+
+        return result;
     }
 
-    Matrix result = new Matrix(values);
-    Matrix base = new Matrix(values);
-
-    for (int i = 1; i < n; i++) {
-        result = result.multiply(base);
-    }
-
-    return result;
-    }
     public static Matrix identity(int size) {
-    Matrix result = new Matrix(size, size);
-    for (int i = 0; i < size; i++) {
-        result.set(i, i, 1);
+        Matrix result = new Matrix(size, size);
+        for (int i = 0; i < size; i++) {
+            result.set(i, i, 1);
+        }
+        return result;
     }
-    return result;
-}
 
-public static Matrix zero(int rows, int cols) {
-    return new Matrix(rows, cols);
-}
-    public Matrix rotate(float angleDegrees) {
+    public static Matrix zero(long rows, long cols) {
+        return new Matrix(rows, cols);
+    }
+
+    public Matrix rotate(double angleDegrees) {
+        if (getRows() != 2 || getCols() != 2) {
+            throw new UnsupportedOperationException("Rotation is only implemented for 2x2 matrices.");
+        }
+
         double angleRadians = Math.toRadians(angleDegrees);
-        float cosAngle = (float) Math.cos(angleRadians);
-        float sinAngle = (float) Math.sin(angleRadians);
+        double cosAngle = Math.cos(angleRadians);
+        double sinAngle = Math.sin(angleRadians);
 
         Matrix rotationMatrix = new Matrix(2, 2);
         rotationMatrix.set(0, 0, cosAngle);
@@ -186,7 +227,12 @@ public static Matrix zero(int rows, int cols) {
 
         return this.multiply(rotationMatrix);
     }
-    public Matrix scale(float scaleX, float scaleY) {
+
+    public Matrix scale(double scaleX, double scaleY) {
+        if (getRows() != 2 || getCols() != 2) {
+            throw new UnsupportedOperationException("Scaling is only implemented for 2x2 matrices.");
+        }
+
         Matrix scalingMatrix = new Matrix(2, 2);
         scalingMatrix.set(0, 0, scaleX);
         scalingMatrix.set(0, 1, 0);
@@ -195,17 +241,41 @@ public static Matrix zero(int rows, int cols) {
 
         return this.multiply(scalingMatrix);
     }
-    
-    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < getRows(); i++) {
-            for (int j = 0; j < getCols(); j++) {
-                sb.append(String.format("%.2f ", values[i][j]));
+        for (long i = 0; i < getRows(); i++) {
+            for (long j = 0; j < getCols(); j++) {
+                sb.append(String.format("%.2f ", values[(int)i][(int)j]));
             }
-        sb.append("\n");
+            sb.append("\n");
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Matrix matrix = (Matrix) o;
+        if (getRows() != matrix.getRows() || getCols() != matrix.getCols()) return false;
+        for (long i = 0; i < getRows(); i++) {
+            for (long j = 0; j < getCols(); j++) {
+                if (Double.compare(matrix.get(i, j), this.get(i, j)) != 0) return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        for (long i = 0; i < getRows(); i++) {
+            for (long j = 0; j < getCols(); j++) {
+                result = 31 * result + Double.hashCode(values[(int)i][(int)j]);
+            }
+        }
+        return result;
     }
 }
