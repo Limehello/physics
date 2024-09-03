@@ -14,13 +14,13 @@ public class PhysicsAngle {
     public double convertToRadians(double deg) {
         return deg * (3.141592653589793 / 180)
     }
-    public void addAngle(Angle other) {
+    public void add(Angle other) {
         this.angle += other.getAngle();
     }
-    public void subtractAngle(Angle other) {
+    public void subtract(Angle other) {
         this.angle -= other.getAngle();
     }
-    public void normalizeAngle() {
+    public void normalize() {
         this.angle = this.angle % (2 * Math.PI);
         if (this.angle < 0) {
             this.angle += 2 * Math.PI;
