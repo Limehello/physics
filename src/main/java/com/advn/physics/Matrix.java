@@ -129,8 +129,72 @@ public class Matrix {
     }
     return (float) Math.sqrt(sum);
     }
+    public void swapRows(int row1, int row2) {
+    float[] temp = values[row1];
+    values[row1] = values[row2];
+    values[row2] = temp;
+}
+
+public void scaleRow(int row, float factor) {
+    for (int j = 0; j < getCols(); j++) {
+        values[row][j] *= factor;
+    }
+}
+
+public void addRows(int row1, int row2, float factor) {
+    for (int j = 0; j < getCols(); j++) {
+        values[row1][j] += factor * values[row2][j];
+    }
+}
+    public Matrix power(int n) {
+    if (getRows() != getCols()) {
+        throw new IllegalArgumentException("Matrix must be square to compute power.");
+    }
+
+    Matrix result = new Matrix(values);
+    Matrix base = new Matrix(values);
+
+    for (int i = 1; i < n; i++) {
+        result = result.multiply(base);
+    }
+
+    return result;
+    }
+    public static Matrix identity(int size) {
+    Matrix result = new Matrix(size, size);
+    for (int i = 0; i < size; i++) {
+        result.set(i, i, 1);
+    }
+    return result;
+}
+
+public static Matrix zero(int rows, int cols) {
+    return new Matrix(rows, cols);
+}
+    public Matrix rotate(float angleDegrees) {
+        double angleRadians = Math.toRadians(angleDegrees);
+        float cosAngle = (float) Math.cos(angleRadians);
+        float sinAngle = (float) Math.sin(angleRadians);
+
+        Matrix rotationMatrix = new Matrix(2, 2);
+        rotationMatrix.set(0, 0, cosAngle);
+        rotationMatrix.set(0, 1, -sinAngle);
+        rotationMatrix.set(1, 0, sinAngle);
+        rotationMatrix.set(1, 1, cosAngle);
+
+        return this.multiply(rotationMatrix);
+    }
+    public Matrix scale(float scaleX, float scaleY) {
+        Matrix scalingMatrix = new Matrix(2, 2);
+        scalingMatrix.set(0, 0, scaleX);
+        scalingMatrix.set(0, 1, 0);
+        scalingMatrix.set(1, 0, 0);
+        scalingMatrix.set(1, 1, scaleY);
+
+        return this.multiply(scalingMatrix);
+    }
     
-    
+    }
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
