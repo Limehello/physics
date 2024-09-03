@@ -98,7 +98,63 @@ public class PhysicsVector {
     public PhysicsVector unitVector() {
         return normalize();
     }
-    
+    public double distanceToLineSegment(PhysicsVector p1, PhysicsVector p2) {
+        double l2 = p1.distanceSquaredTo(p2);
+        if (l2 == 0) return distanceTo(p1);
+        double t = Math.max(0, Math.min(1, (this.pX - p1.pX) * (p2.pX - p1.pX) + (this.pY - p1.pY) * (p2.pY - p1.pY)) / l2);
+        return distanceTo(new PhysicsVector(p1.pX + t * (p2.pX - p1.pX), p1.pY + t * (p2.pY - p1.pY)));
+    }
+    public PhysicsVector projectOntoLine(PhysicsVector lineStart, PhysicsVector lineEnd) {
+        PhysicsVector lineDir = lineEnd.subtract(lineStart);
+        return lineStart.add(projectOnto(lineDir));
+    }
+    public static PhysicsVector slerp(PhysicsVector start, PhysicsVector end, double t) {
+        double dot = start.dot(end);
+        double theta = Math.acos(dot);
+        double sinTheta = Math.sin(theta);
+        if (sinTheta < 1e-6) {
+            return interpolate(start, end, t);
+        }
+        double weightStart = Math.sin((1 - t) * theta) / sinTheta;
+        double weightEnd = Math.sin(t * theta) / sinTheta;
+        return start.scale(weightStart).add(end.scale(weightEnd));
+    }
+    public static PhysicsVector computeCentroid(PhysicsVector[] vectors) {
+        double sumX = 0;
+        double sumY = 0;
+        for (PhysicsVector v : vectors) {
+            sumX += v.pX;
+            sumY += v.pY;
+        }
+        return new PhysicsVector(sumX / vectors.length, sumY / vectors.length);
+    }
+    public static PhysicsVector intersectLines(PhysicsVector p1, PhysicsVector p2, PhysicsVector p3, PhysicsVector p4) {
+        double a1 = p2.pY - p1.pY;
+        double b1 = p1.pX - p2.pX;
+        double c1 = a1 * p1.pX + b1 * p1.pY;
+        double a2 = p4.pY - p3.pY;
+        double b2 = p3.pX - p4.pX;
+        double c2 = a2 * p3.pX + b2 * p3.pY;
+        double determinant = a1 * b2 - a2 * b1;
+        if (Math.abs(determinant) < 1e-10) {
+            return null; // Lines are parallel
+        }
+        double x = (b2 * c1 - b1 * c2) / determinant;
+        double y = (a1 * c2 - a2 * c1) / determinant;
+        return new PhysicsVector(x, y);
+    }
+    public PhysicsVector closestPointOnLineSegment(PhysicsVector p1, PhysicsVector p2) {
+        PhysicsVector lineDir = p2.subtract(p1);
+        double t = Math.max(0, Math.min(1, dot(lineDir) / lineDir.dot(lineDir)));
+        return p1.add(lineDir.scale(t));
+    }
+    public double[] barycentricCoordinates(PhysicsVector v1, PhysicsVector v2, PhysicsVector v3) {
+        double denom = (v2.getPY() - v3.getPY()) * (v1.getPX() - v3.getPX()) + (v3.getPX() - v2.getPX()) * (v1.getPY() - v3.getPY());
+        double a = ((v2.getPY() - v3.getPY()) * (pX - v3.getPX()) + (v3.getPX() - v2.getPX()) * (pY - v3.getPY())) / denom;
+        double b = ((v3.getPY() - v1.getPY()) * (pX - v3.getPX()) + (v1.getPX() - v3.getPX()) * (pY - v3.getPY())) / denom;
+        double c = 1 - a - b;
+        return new double[]{a, b, c};
+    }
     
     @Override
     public String toString() {
